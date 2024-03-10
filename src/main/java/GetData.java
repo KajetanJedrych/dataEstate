@@ -12,10 +12,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 public class GetData {
     WebDriver driver = new ChromeDriver();
@@ -29,11 +26,19 @@ public class GetData {
         Date data = new Date();
         return dateFormat.format(data) + ".yaml";
     }
-    public static void zapiszDoYAML(List<String> lista, String nazwaPliku) {
+    public static Map<String, String> convertToMap(List<String> lista){
+        Map<String, String> mapOfLinks = new HashMap<>();
+        for (String link : lista) {
+            mapOfLinks.put(link, "link");
+        }
+        return mapOfLinks;
+    }
+    public static void saveFromMapToYaml(Map<String, String> linksMap, String nazwaPliku) {
+
         Yaml yaml = new Yaml();
 
         try (FileWriter writer = new FileWriter(nazwaPliku)) {
-            yaml.dump(lista, writer);
+            yaml.dump(linksMap, writer);
             System.out.println("Lista została zapisana do pliku: " + nazwaPliku);
         } catch (IOException e) {
             e.printStackTrace();
@@ -49,11 +54,9 @@ public class GetData {
                 String linkURL = link.getAttribute("href");
                 linkURLs.add(linkURL);
             }
-
             // Zwrócenie listy adresów URL
             return linkURLs;
         }
-
         @BeforeEach
         public void driverSetup () {
             driver.get("https://www.otodom.pl/");
@@ -76,7 +79,6 @@ public class GetData {
             driver.findElement(By.id("search-form-submit")).click();
             wait.until(ExpectedConditions.titleContains("Mieszkania na sprzedaż: Lębork, lęborski | Otodom.pl"));
         }
-
         @Test
         public void LoginTest () {
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
@@ -99,13 +101,13 @@ public class GetData {
                 List<String> linkURLs1 = getLinkURLs(driver, "//article/section/div[1]/div/div[2]/div/div/div[1]/div/div[1]/a");
                 allLinkURLs.addAll(linkURLs1);
                 counter++;
-
             }
             usunDuplikaty(allLinkURLs);
             String data =generujNazwePliku();
-            zapiszDoYAML(allLinkURLs, data);
-            for (String url : allLinkURLs) {
-                System.out.println(url);
+            Map<String, String> linksMap = new HashMap<>(convertToMap(allLinkURLs));
+            saveFromMapToYaml(linksMap, data);
+            for (Map.Entry<String, String> entry : linksMap.entrySet()) {
+                System.out.println("Klucz: " + entry.getKey() + ", Wartość: " + entry.getValue());
             }
             driver.quit();
         }
