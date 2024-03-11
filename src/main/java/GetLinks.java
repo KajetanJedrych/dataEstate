@@ -3,7 +3,6 @@ import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.yaml.snakeyaml.Yaml;
@@ -14,8 +13,8 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.*;
 
-public class GetData {
-    WebDriver driver = new ChromeDriver();
+public class GetLinks {
+    WebDriver driver = WebDriverSingleton.getWebDriverInstance();
 
     public static List<String> usunDuplikaty(List<String> lista) {
         HashSet<String> set = new HashSet<>(lista);
@@ -58,7 +57,7 @@ public class GetData {
             return linkURLs;
         }
         @BeforeEach
-        public void driverSetup () {
+        public void driverSetup() {
             driver.get("https://www.otodom.pl/");
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(5));
             wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("onetrust-accept-btn-handler")));
@@ -102,7 +101,7 @@ public class GetData {
                 allLinkURLs.addAll(linkURLs1);
                 counter++;
             }
-            usunDuplikaty(allLinkURLs);
+            List<String> finalList = new ArrayList<>(usunDuplikaty(allLinkURLs));
             String data =generujNazwePliku();
             Map<String, String> linksMap = new HashMap<>(convertToMap(allLinkURLs));
             saveFromMapToYaml(linksMap, data);
